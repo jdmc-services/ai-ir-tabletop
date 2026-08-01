@@ -179,6 +179,32 @@ SCENARIOS = [
         },
         "framework": "HIPAA §164.400-414 — Breach notification · HIPAA §164.402 — Breach presumption standard · NIST AI RMF Map 5.2",
     },
+    {
+        "id": 4,
+        "title": "Autonomous Agent & Pipeline Breach",
+        "tag": "OWASP LLM10 · MITRE ATLAS · NIST AI RMF",
+        "time": "11:45 PM — Sunday",
+        "incident": (
+            "Your automated ML dataset ingestion pipeline is processing external partner data. "
+            "A malicious dataset executes a remote-code loader and template injection, granting execution rights on a worker container. "
+            "Within minutes, an autonomous framework harvests ambient non-human identity (NHI) service tokens and attempts lateral movement across your internal Kubernetes clusters, executing thousands of automated actions."
+        ),
+        "question": "What is your immediate containment action in the first 15 minutes?",
+        "choices": [
+            "A — Immediately revoke standing Non-Human Identity (NHI) tokens and isolate worker subnets at the CNI/network level.",
+            "B — Delete the worker container pod, restart the deployment, and request clean datasets from the partner.",
+            "C — Feed raw exploit logs directly into your cloud provider's commercial LLM API to write an automated cleanup script.",
+            "D — Pause the customer-facing web dashboard and wait until Monday morning for full forensic analysis.",
+        ],
+        "best": "A",
+        "rationale": {
+            "A": "Correct. Revoking standing tokens and isolating network egress immediately breaks the attack chain and stops lateral movement across clusters, per NIST AI RMF Respond 1.1.",
+            "B": "Deleting the container pod leaves harvested long-lived API tokens and service accounts active, allowing the attacker to continue operating outside the original pod.",
+            "C": "Commercial LLM safety filters frequently block raw exploit payloads as policy violations, halting emergency analysis. On-premise or isolated models must be used.",
+            "D": "Pausing the web UI leaves internal cluster management ports exposed and fails to contain machine-speed lateral movement.",
+        },
+        "framework": "OWASP LLM10 — Unchecked Model Output / Remote Code · MITRE ATLAS AML.T0051 · NIST AI RMF Respond 1.1",
+    },
 ]
 
 def get_client():
@@ -221,8 +247,8 @@ def main():
 
     st.markdown("# 🚨 AI Incident Response Tabletop")
     st.markdown(
-        "Four healthcare AI incidents. Make the call. "
-        "Claude grades your decisions against **NIST AI RMF**, **HIPAA**, and **MITRE ATLAS**."
+        "Five enterprise & healthcare AI incidents. Make the call. "
+        "Claude grades your decisions against **NIST AI RMF**, **HIPAA**, **MITRE ATLAS**, and **OWASP LLM Top 10**."
     )
     st.divider()
 
@@ -230,7 +256,7 @@ def main():
         show_summary_page()
         return
 
-    progress_cols = st.columns(4)
+    progress_cols = st.columns(len(SCENARIOS))
     for i, s in enumerate(SCENARIOS):
         with progress_cols[i]:
             if i in st.session_state.answers:
@@ -251,7 +277,7 @@ def main():
 
     s = SCENARIOS[idx]
 
-    st.markdown(f"### Scenario {idx+1} of 4 — {s['title']}")
+    st.markdown(f"### Scenario {idx+1} of {len(SCENARIOS)} — {s['title']}")
     st.caption(s["tag"])
 
     st.markdown(f"""
@@ -319,12 +345,13 @@ def main():
 
 
 def show_summary_page():
+    total = len(SCENARIOS)
     correct = sum(1 for i, s in enumerate(SCENARIOS) if st.session_state.answers.get(i) == s["best"])
     partial = sum(1 for i, s in enumerate(SCENARIOS)
                   if st.session_state.answers.get(i) in ["A","B"] and s["best"] == "C"
                   and st.session_state.answers.get(i) != s["best"])
-    wrong = 4 - correct - partial
-    pct = int((correct + partial * 0.5) / 4 * 100)
+    wrong = total - correct - partial
+    pct = int((correct + partial * 0.5) / total * 100)
 
     if pct >= 75:
         label = "Strong IR foundation"
@@ -360,9 +387,9 @@ def show_summary_page():
 
     st.divider()
     st.markdown("""
-This tabletop covers four of the most common AI incident types in healthcare:
+This tabletop covers five of the most critical enterprise and healthcare AI incident types:
 hallucination with clinical impact, prompt injection in production, silent model drift,
-and vendor data exposure. A complete AI IR plan addresses all four before an incident occurs.
+vendor data exposure, and autonomous agent pipeline exploits. A complete AI IR plan addresses all five before an incident occurs.
     """)
 
     if st.button("Run again", use_container_width=True):
