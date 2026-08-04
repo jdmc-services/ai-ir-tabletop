@@ -82,15 +82,16 @@ SCENARIOS = [
         "question": "What is your first action in the next 30 minutes?",
         "choices": [
             "A — Quarantine the AI system immediately and escalate to the CISO and CMO.",
-            "B — Correct the document and log the error internally — no escalation needed since it was caught before signing.",
-            "C — Notify the patient's care team, flag the document, and open a formal AI incident ticket.",
+            "B — Notify the patient's care team, flag the document, and open a formal AI incident ticket.",
+            "C — Correct the document and log the error internally — no escalation needed since it was caught before signing.",
             "D — Wait until morning to assess — the physician caught it, so there is no active patient harm.",
         ],
-        "best": "C",
+        "best": "B",
+        "partial": ["A", "C"],
         "rationale": {
             "A": "Quarantining the system is premature before root cause is known — and escalating to CISO/CMO without first securing the patient record inverts the priority order.",
-            "B": "Logging internally misses the 22-minute exposure window and the three staff views, which create a potential HIPAA audit trail requirement.",
-            "C": "Correct. Securing the clinical record and notifying the care team is the immediate patient safety action. A formal AI incident ticket triggers your investigation workflow per NIST AI RMF Map 5.1.",
+            "B": "Correct. Securing the clinical record and notifying the care team is the immediate patient safety action. A formal AI incident ticket triggers your investigation workflow per NIST AI RMF Map 5.1.",
+            "C": "Logging internally misses the 22-minute exposure window and the three staff views, which create a potential HIPAA audit trail requirement.",
             "D": "Deferring until morning is a compliance failure. The 22-minute exposure window must be documented while the record is fresh.",
         },
         "framework": "NIST AI RMF Map 5.1 · HIPAA §164.308(a)(6) — Security incident procedures",
@@ -111,15 +112,16 @@ SCENARIOS = [
         "choices": [
             "A — IT Security owns it — this is a cyberattack. Lock down the chatbot and file a cybersecurity incident report.",
             "B — Clinical Operations owns it — four patients received incorrect medical guidance. Patient outreach is the only priority.",
-            "C — Joint incident: Clinical Operations handles patient outreach while IT Security investigates the attack vector simultaneously.",
-            "D — Legal owns it — notify the malpractice insurer and pause all actions until counsel advises.",
+            "C — Legal owns it — notify the malpractice insurer and pause all actions until counsel advises.",
+            "D — Joint incident: Clinical Operations handles patient outreach while IT Security investigates the attack vector simultaneously.",
         ],
-        "best": "C",
+        "best": "D",
+        "partial": ["A", "B"],
         "rationale": {
             "A": "Treating this as a pure cybersecurity incident misses the immediate patient safety obligation. Four patients received incorrect triage guidance and must be contacted.",
             "B": "Clinical outreach is essential — but handing the incident entirely to clinical ops means the attack vector stays open.",
-            "C": "Correct. This is exactly the split-ownership scenario NIST AI RMF anticipates. Patient outreach and attack containment are parallel tracks, not sequential.",
-            "D": "Pausing all action for legal counsel leaves the attack vector open and delays patient outreach. Inaction is itself a liability.",
+            "C": "Pausing all action for legal counsel leaves the attack vector open and delays patient outreach. Inaction is itself a liability.",
+            "D": "Correct. This is exactly the split-ownership scenario NIST AI RMF anticipates. Patient outreach and attack containment are parallel tracks, not sequential.",
         },
         "framework": "MITRE ATLAS AML.T0051 — Prompt injection · NIST AI RMF Govern 1.2 — Accountability · HIPAA §164.308(a)(6)",
     },
@@ -137,16 +139,17 @@ SCENARIOS = [
         ),
         "question": "What is the core compliance failure and what do you do first?",
         "choices": [
-            "A — Suspend the AI tool immediately and revert to manual authorization review until the vendor explains the model change.",
-            "B — Request a model card and change log from the vendor. Do not suspend — suspension disrupts operations and the change may be benign.",
-            "C — Notify your CMO and compliance team, request the vendor's model change documentation, and audit a sample of post-update authorizations for clinical accuracy.",
+            "A — Notify your CMO and compliance team, request the vendor's model change documentation, and audit a sample of post-update authorizations for clinical accuracy.",
+            "B — Suspend the AI tool immediately and revert to manual authorization review until the vendor explains the model change.",
+            "C — Request a model card and change log from the vendor. Do not suspend — suspension disrupts operations and the change may be benign.",
             "D — Do nothing yet — an 18% approval rate increase could reflect population changes, not a model problem. Gather more data first.",
         ],
-        "best": "C",
+        "best": "A",
+        "partial": ["B", "C"],
         "rationale": {
-            "A": "Immediate suspension is defensible but operationally costly and may be premature before you know if clinical harm occurred.",
-            "B": "Requesting documentation without escalating internally is incomplete. Your CMO and compliance team need to know a vendor silently changed a clinical decision support tool.",
-            "C": "Correct. The core compliance failure is unauthorized model modification of a clinical decision support tool — a direct NIST AI RMF Govern 1.4 and OWASP LLM05 issue. Internal escalation, vendor documentation, and a sample audit run in parallel.",
+            "A": "Correct. The core compliance failure is unauthorized model modification of a clinical decision support tool — a direct NIST AI RMF Govern 1.4 and OWASP LLM05 issue. Internal escalation, vendor documentation, and a sample audit run in parallel.",
+            "B": "Immediate suspension is defensible but operationally costly and may be premature before you know if clinical harm occurred.",
+            "C": "Requesting documentation without escalating internally is incomplete. Your CMO and compliance team need to know a vendor silently changed a clinical decision support tool.",
             "D": "Waiting when you have a confirmed silent model update to a clinical tool is a governance failure. The 18% shift is statistically significant and the cause is already known.",
         },
         "framework": "OWASP LLM05 — Supply chain risk · NIST AI RMF Govern 1.4 — Organizational AI risk policies",
@@ -171,6 +174,7 @@ SCENARIOS = [
             "D — Notify patients immediately out of caution — even without confirmed exposure.",
         ],
         "best": "C",
+        "partial": ["B"],
         "rationale": {
             "A": "Waiting for confirmation is the most common and most costly compliance mistake. Under HIPAA, the burden is on the covered entity to demonstrate a breach did NOT occur. The 60-day clock starts from discovery — today.",
             "B": "Jumping to HHS notification in 24 hours without investigating scope is premature. HIPAA gives you 60 days from discovery — use that window properly.",
@@ -181,31 +185,37 @@ SCENARIOS = [
     },
     {
         "id": 4,
-        "title": "Autonomous Agent & Pipeline Breach",
-        "tag": "OWASP LLM10 · MITRE ATLAS · NIST AI RMF",
-        "time": "11:45 PM — Sunday",
+        "title": "Shadow AI with PHI",
+        "tag": "HIPAA Privacy Rule · NIST AI RMF",
+        "time": "1:20 PM — Wednesday",
         "incident": (
-            "Your automated ML dataset ingestion pipeline is processing external partner data. "
-            "A malicious dataset executes a remote-code loader and template injection, granting execution rights on a worker container. "
-            "Within minutes, an autonomous framework harvests ambient non-human identity (NHI) service tokens and attempts lateral movement across your internal Kubernetes clusters, executing thousands of automated actions."
+            "During a routine web-traffic review, your security team discovers that a case "
+            "management nurse has been pasting patient discharge notes into a free public "
+            "AI chatbot to summarize them — for at least 3 months. The tool is not on your "
+            "approved list, there is no BAA with the provider, and its terms of service "
+            "allow submitted content to be used for model training. You cannot determine "
+            "exactly how many patient records were submitted."
         ),
-        "question": "What is your immediate containment action in the first 15 minutes?",
+        "question": "How do you classify this and what is your first move?",
         "choices": [
-            "A — Immediately revoke standing Non-Human Identity (NHI) tokens and isolate worker subnets at the CNI/network level.",
-            "B — Delete the worker container pod, restart the deployment, and request clean datasets from the partner.",
-            "C — Feed raw exploit logs directly into your cloud provider's commercial LLM API to write an automated cleanup script.",
-            "D — Pause the customer-facing web dashboard and wait until Monday morning for full forensic analysis.",
+            "A — This is an employee policy violation. Refer the nurse to HR for disciplinary action and block the site.",
+            "B — Treat it as a potential HIPAA breach: preserve the traffic logs, escalate to the Privacy Officer, scope the disclosure, and initiate a breach risk assessment — while separately addressing training and access controls.",
+            "C — Block the site immediately and quietly retrain staff — no breach analysis needed since intent was benign.",
+            "D — Contact the AI provider and demand deletion of the data before doing anything internally.",
         ],
-        "best": "A",
+        "best": "B",
+        "partial": ["A"],
         "rationale": {
-            "A": "Correct. Revoking standing tokens and isolating network egress immediately breaks the attack chain and stops lateral movement across clusters, per NIST AI RMF Respond 1.1.",
-            "B": "Deleting the container pod leaves harvested long-lived API tokens and service accounts active, allowing the attacker to continue operating outside the original pod.",
-            "C": "Commercial LLM safety filters frequently block raw exploit payloads as policy violations, halting emergency analysis. On-premise or isolated models must be used.",
-            "D": "Pausing the web UI leaves internal cluster management ports exposed and fails to contain machine-speed lateral movement.",
+            "A": "Discipline may follow, but leading with HR misses the core issue: PHI was disclosed to a third party with no BAA. That is an impermissible disclosure requiring breach analysis, regardless of intent.",
+            "B": "Correct. PHI sent to a non-BAA third party is a presumed impermissible disclosure under the Privacy Rule. Log preservation, Privacy Officer escalation, and scoping run first; training, access controls, and any HR action follow.",
+            "C": "Benign intent does not exempt an impermissible disclosure from HIPAA analysis. Skipping the breach assessment is itself a compliance failure — and destroys your defensibility if it surfaces later.",
+            "D": "Requesting deletion is worth doing, but doing it before internal escalation and log preservation risks losing evidence and delays your own required risk assessment.",
         },
-        "framework": "OWASP LLM10 — Unchecked Model Output / Remote Code · MITRE ATLAS AML.T0051 · NIST AI RMF Respond 1.1",
+        "framework": "HIPAA §164.502 — Impermissible disclosure · HIPAA §164.402 — Breach presumption · NIST AI RMF Govern 1.6 — Inventory of AI systems",
     },
 ]
+
+N = len(SCENARIOS)
 
 def get_client():
     return anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
@@ -242,13 +252,16 @@ def init_state():
     if "show_summary" not in st.session_state:
         st.session_state.show_summary = False
 
+def is_partial(scenario, letter):
+    return letter in scenario.get("partial", []) and letter != scenario["best"]
+
 def main():
     init_state()
 
     st.markdown("# 🚨 AI Incident Response Tabletop")
     st.markdown(
-        "Five enterprise & healthcare AI incidents. Make the call. "
-        "Claude grades your decisions against **NIST AI RMF**, **HIPAA**, **MITRE ATLAS**, and **OWASP LLM Top 10**."
+        f"{N} healthcare AI incidents. Make the call. "
+        "Claude grades your decisions against **NIST AI RMF**, **HIPAA**, and **MITRE ATLAS**."
     )
     st.divider()
 
@@ -256,7 +269,7 @@ def main():
         show_summary_page()
         return
 
-    progress_cols = st.columns(len(SCENARIOS))
+    progress_cols = st.columns(N)
     for i, s in enumerate(SCENARIOS):
         with progress_cols[i]:
             if i in st.session_state.answers:
@@ -270,14 +283,14 @@ def main():
     st.divider()
 
     idx = st.session_state.current
-    if idx >= len(SCENARIOS):
+    if idx >= N:
         st.session_state.show_summary = True
         st.rerun()
         return
 
     s = SCENARIOS[idx]
 
-    st.markdown(f"### Scenario {idx+1} of {len(SCENARIOS)} — {s['title']}")
+    st.markdown(f"### Scenario {idx+1} of {N} — {s['title']}")
     st.caption(s["tag"])
 
     st.markdown(f"""
@@ -316,7 +329,7 @@ def main():
         if fb["correct"]:
             css_class = "grade-correct"
             verdict = "✅ Correct call"
-        elif fb["letter"] in ["A", "B"] and s["best"] == "C":
+        elif is_partial(s, fb["letter"]):
             css_class = "grade-partial"
             verdict = "⚠️ Partial — critical gaps"
         else:
@@ -332,7 +345,7 @@ def main():
 """, unsafe_allow_html=True)
 
         st.divider()
-        if idx < len(SCENARIOS) - 1:
+        if idx < N - 1:
             if st.button("Next scenario →", use_container_width=True):
                 st.session_state.current = idx + 1
                 st.rerun()
@@ -345,13 +358,11 @@ def main():
 
 
 def show_summary_page():
-    total = len(SCENARIOS)
     correct = sum(1 for i, s in enumerate(SCENARIOS) if st.session_state.answers.get(i) == s["best"])
     partial = sum(1 for i, s in enumerate(SCENARIOS)
-                  if st.session_state.answers.get(i) in ["A","B"] and s["best"] == "C"
-                  and st.session_state.answers.get(i) != s["best"])
-    wrong = total - correct - partial
-    pct = int((correct + partial * 0.5) / total * 100)
+                  if is_partial(s, st.session_state.answers.get(i, "")))
+    wrong = N - correct - partial
+    pct = int((correct + partial * 0.5) / N * 100)
 
     if pct >= 75:
         label = "Strong IR foundation"
@@ -386,10 +397,11 @@ def show_summary_page():
             st.caption(s["framework"])
 
     st.divider()
-    st.markdown("""
-This tabletop covers five of the most critical enterprise and healthcare AI incident types:
+    st.markdown(f"""
+This tabletop covers {N} of the most common AI incident types in healthcare:
 hallucination with clinical impact, prompt injection in production, silent model drift,
-vendor data exposure, and autonomous agent pipeline exploits. A complete AI IR plan addresses all five before an incident occurs.
+vendor data exposure, and shadow AI use of PHI. A complete AI IR plan addresses all of
+them before an incident occurs.
     """)
 
     if st.button("Run again", use_container_width=True):
